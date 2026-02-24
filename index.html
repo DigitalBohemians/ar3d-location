@@ -44,33 +44,33 @@
       arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
       loading-screen="enabled: false"
     >
+      <!-- Zylinder am Boden als Markierung -->
+      <a-cylinder
+        gps-entity-place="latitude: 37.35167; longitude: 23.46232"
+        radius="0.5"
+        height="0.2"
+        color="#00ffcc"
+        opacity="0.9"
+      ></a-cylinder>
+
+      <!-- Schild fest im Raum, kein look-at -->
       <a-entity
-        gps-entity-place="latitude: 37.35170; longitude: 23.46239"
-        look-at="[gps-camera]"
+        gps-entity-place="latitude: 37.35167; longitude: 23.46232"
       >
+        <a-box
+          width="8" height="2" depth="0.1"
+          color="#1a1a2e" opacity="0.85"
+          position="0 5 0"
+        ></a-box>
         <a-text
-          value="🏛 ARExhibition\nWillkommen auf Hydra!"
+          value="ARExhibition\nWillkommen auf Hydra!"
           color="white"
           align="center"
-          width="20"
-          position="0 8 0"
+          width="14"
+          position="0 5 0.1"
         ></a-text>
-        <a-box
-          position="0 8 -0.1"
-          width="10"
-          height="2.5"
-          depth="0.1"
-          color="#1a1a2e"
-          opacity="0.8"
-        ></a-box>
-        <a-cylinder
-          position="0 0.5 0"
-          radius="1"
-          height="0.3"
-          color="#00ffcc"
-          opacity="0.9"
-        ></a-cylinder>
       </a-entity>
+
       <a-camera gps-camera="minDistance: 0" rotation-reader></a-camera>
     </a-scene>
     <script>
