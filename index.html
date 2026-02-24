@@ -44,22 +44,22 @@
       arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
       loading-screen="enabled: false"
     >
-      <!-- Zylinder am Boden -->
+      <!-- Zylinder am Boden, 10m weiter südlich ins Meer -->
       <a-cylinder
-        gps-entity-place="latitude: 37.35167; longitude: 23.46232"
-        radius="0.5"
-        height="0.2"
+        gps-entity-place="latitude: 37.35158; longitude: 23.46232"
+        radius="0.3"
+        height="0.15"
         color="#00ffcc"
         opacity="0.9"
       ></a-cylinder>
 
-      <!-- Schild direkt über Zylinder, Richtung Felsen (Nord) -->
+      <!-- Schild 180 Grad gedreht, kleiner, 10m weiter weg -->
       <a-entity
-        gps-entity-place="latitude: 37.35167; longitude: 23.46232"
-        rotation="0 0 0"
+        gps-entity-place="latitude: 37.35158; longitude: 23.46232"
+        rotation="0 180 0"
       >
         <a-box
-          width="6" height="1.5" depth="0.1"
+          width="4" height="1.2" depth="0.1"
           color="#1a1a2e" opacity="0.85"
           position="0 1.5 0"
         ></a-box>
@@ -67,8 +67,8 @@
           value="ARExhibition\nWillkommen auf Hydra!"
           color="white"
           align="center"
-          width="10"
-          position="0 1.5 0.1"
+          width="7"
+          position="0 1.5 -0.1"
         ></a-text>
       </a-entity>
 
