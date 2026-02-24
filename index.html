@@ -28,6 +28,18 @@
         border-radius: 20px; font-size: 13px; z-index: 8888;
         display: none; text-align: center; max-width: 90vw;
       }
+      #compass {
+        position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.7); color: white;
+        padding: 10px 20px; border-radius: 20px;
+        font-size: 14px; z-index: 8888; display: none;
+        text-align: center; min-width: 200px;
+      }
+      #arrow {
+        font-size: 32px; display: block; margin-bottom: 4px;
+        transition: transform 0.3s;
+      }
+      #distance { font-size: 13px; color: #aaa; }
     </style>
   </head>
   <body>
@@ -37,8 +49,133 @@
       <button id="startBtn">▶ AR Starten</button>
     </div>
     <div id="status">📍 GPS wird ermittelt…</div>
+    <div id="compass">
+      <span id="arrow">⬆️</span>
+      <span id="direction">Richtung wird berechnet…</span><br>
+      <span id="distance"></span>
+    </div>
 
     <a-scene
       vr-mode-ui="enabled: false"
       renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
-      arjs="sourceType: webcam; debugUIEnabled: false; trackingMet
+      arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
+      loading-screen="enabled: false"
+    >
+      <a-assets>
+        <a-asset-item id="model" src="Matiblendlocationtest.glb"></a-asset-item>
+      </a-assets>
+
+      <a-entity
+        gps-entity-place="latitude: 37.350000; longitude: 23.466767"
+        look-at="[gps-camera]"
+      >
+        <a-entity
+          gltf-model="#model"
+          animation-mixer="loop: repeat"
+          position="0 0 0"
+          scale="2 2 2"
+        ></a-entity>
+      </a-entity>
+
+      <a-camera gps-camera="minDistance: 1" rotation-reader></a-camera>
+    </a-scene>
+
+    <script>
+      const TARGET_LAT = 37.350000;
+      const TARGET_LON = 23.466767;
+
+      let userLat = null, userLon = null, userHeading = null;
+
+      function toRad(deg) { return deg * Math.PI / 180; }
+      function toDeg(rad) { return rad * 180 / Math.PI; }
+
+      function getDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371000;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat/2)**2 +
+                  Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      }
+
+      function getBearing(lat1, lon1, lat2, lon2) {
+        const dLon = toRad(lon2 - lon1);
+        const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+        const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+                  Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+        return (toDeg(Math.atan2(y, x)) + 360) % 360;
+      }
+
+      function updateCompass() {
+        if (userLat === null || userHeading === null) return;
+
+        const dist = getDistance(userLat, userLon, TARGET_LAT, TARGET_LON);
+        const bearing = getBearing(userLat, userLon, TARGET_LAT, TARGET_LON);
+        const relative = (bearing - userHeading + 360) % 360;
+
+        document.getElementById('distance').textContent =
+          dist < 1000 ? `${Math.round(dist)}m entfernt` : `${(dist/1000).toFixed(1)}km entfernt`;
+
+        const arrow = document.getElementById('arrow');
+        const dir = document.getElementById('direction');
+        arrow.style.transform = `rotate(${relative}deg)`;
+
+        if (dist < 10) {
+          dir.textContent = '🎯 Du bist da!';
+          arrow.textContent = '✅';
+        } else if (relative < 30 || relative > 330) {
+          dir.textContent = 'Geradeaus';
+        } else if (relative < 90) {
+          dir.textContent = 'Leicht rechts';
+        } else if (relative < 150) {
+          dir.textContent = 'Rechts';
+        } else if (relative < 210) {
+          dir.textContent = 'Umdrehen';
+        } else if (relative < 270) {
+          dir.textContent = 'Links';
+        } else {
+          dir.textContent = 'Leicht links';
+        }
+      }
+
+      document.getElementById('startBtn').addEventListener('click', () => {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('status').style.display = 'block';
+        document.getElementById('compass').style.display = 'block';
+
+        // GPS
+        navigator.geolocation.watchPosition(
+          (pos) => {
+            userLat = pos.coords.latitude;
+            userLon = pos.coords.longitude;
+            const acc = Math.round(pos.coords.accuracy);
+            document.getElementById('status').textContent =
+              `📍 ${userLat.toFixed(5)}, ${userLon.toFixed(5)} (±${acc}m)`;
+            updateCompass();
+          },
+          (err) => { document.getElementById('status').textContent = '⚠️ GPS Fehler: ' + err.message; },
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+        );
+
+        // Kompass
+        if (window.DeviceOrientationEvent) {
+          if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission().then(state => {
+              if (state === 'granted') {
+                window.addEventListener('deviceorientation', e => {
+                  userHeading = e.alpha;
+                  updateCompass();
+                });
+              }
+            });
+          } else {
+            window.addEventListener('deviceorientation', e => {
+              userHeading = e.alpha;
+              updateCompass();
+            });
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
