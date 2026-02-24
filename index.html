@@ -45,9 +45,10 @@
       loading-screen="enabled: false"
     >
       <a-assets>
-        <img id="bild" src="8FE8AA28-375B-4C00-B168-BCDECCBDCEA6.png" />
+        <img id="bild" src="8FE8AA28-375B-4C00-B168-BCDECCBDCEA6.png" crossorigin="anonymous" />
       </a-assets>
 
+      <!-- Zylinder am Boden -->
       <a-cylinder
         gps-entity-place="latitude: 37.35158; longitude: 23.46232"
         radius="0.3"
@@ -56,30 +57,25 @@
         opacity="0.9"
       ></a-cylinder>
 
-      <a-entity
+      <!-- Bild - side double = von beiden Seiten sichtbar -->
+      <a-plane
         gps-entity-place="latitude: 37.35158; longitude: 23.46232"
-      >
-        <!-- Textschild links -->
-        <a-box
-          width="4" height="1.2" depth="0.1"
-          color="#1a1a2e" opacity="0.85"
-          position="-3 1.5 0"
-        ></a-box>
-        <a-text
-          value="ARExhibition\nWillkommen auf Hydra!"
-          color="white"
-          align="center"
-          width="7"
-          position="-3 1.5 0.06"
-        ></a-text>
+        src="#bild"
+        width="3" height="2"
+        position="0 3.5 0"
+        side="double"
+      ></a-plane>
 
-        <!-- Bild rechts daneben -->
-        <a-plane
-          src="#bild"
-          width="3" height="2"
-          position="1.5 1.5 0"
-        ></a-plane>
-      </a-entity>
+      <!-- Text - side double = von beiden Seiten sichtbar -->
+      <a-text
+        gps-entity-place="latitude: 37.35158; longitude: 23.46232"
+        value="ARExhibition\nWillkommen auf Hydra!"
+        color="white"
+        align="center"
+        width="7"
+        position="0 1.5 0"
+        side="double"
+      ></a-text>
 
       <a-camera gps-camera="minDistance: 0" rotation-reader></a-camera>
     </a-scene>
