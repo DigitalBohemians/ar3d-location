@@ -48,7 +48,7 @@
         <img id="bild" src="8FE8AA28-375B-4C00-B168-BCDECCBDCEA6.png" crossorigin="anonymous" />
       </a-assets>
 
-      <!-- Zylinder am Boden -->
+      <!-- Zylinder am Boden als Marker -->
       <a-cylinder
         gps-entity-place="latitude: 37.35158; longitude: 23.46232"
         radius="0.3"
@@ -57,25 +57,28 @@
         opacity="0.9"
       ></a-cylinder>
 
-      <!-- Bild - side double = von beiden Seiten sichtbar -->
-      <a-plane
+      <!-- Alles in einer Entity, direkt über dem Zylinder -->
+      <a-entity
         gps-entity-place="latitude: 37.35158; longitude: 23.46232"
-        src="#bild"
-        width="3" height="2"
-        position="0 3.5 0"
-        side="double"
-      ></a-plane>
+      >
+        <!-- Bild 2m hoch -->
+        <a-plane
+          src="#bild"
+          width="3" height="2"
+          position="0 2 0"
+          side="double"
+        ></a-plane>
 
-      <!-- Text - side double = von beiden Seiten sichtbar -->
-      <a-text
-        gps-entity-place="latitude: 37.35158; longitude: 23.46232"
-        value="ARExhibition\nWillkommen auf Hydra!"
-        color="white"
-        align="center"
-        width="7"
-        position="0 1.5 0"
-        side="double"
-      ></a-text>
+        <!-- Text 0.5m hoch direkt darunter -->
+        <a-text
+          value="ARExhibition\nWillkommen auf Hydra!"
+          color="white"
+          align="center"
+          width="6"
+          position="0 0.5 0"
+          side="double"
+        ></a-text>
+      </a-entity>
 
       <a-camera gps-camera="minDistance: 0" rotation-reader></a-camera>
     </a-scene>
