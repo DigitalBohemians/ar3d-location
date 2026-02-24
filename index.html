@@ -44,7 +44,6 @@
       arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
       loading-screen="enabled: false"
     >
-      <!-- Zylinder am Boden, 10m weiter südlich ins Meer -->
       <a-cylinder
         gps-entity-place="latitude: 37.35158; longitude: 23.46232"
         radius="0.3"
@@ -53,22 +52,23 @@
         opacity="0.9"
       ></a-cylinder>
 
-      <!-- Schild 180 Grad gedreht, kleiner, 10m weiter weg -->
       <a-entity
         gps-entity-place="latitude: 37.35158; longitude: 23.46232"
         rotation="0 180 0"
       >
+        <!-- Box als Hintergrund -->
         <a-box
           width="4" height="1.2" depth="0.1"
           color="#1a1a2e" opacity="0.85"
           position="0 1.5 0"
         ></a-box>
+        <!-- Text weit nach vorne gezogen damit er vor der Box liegt -->
         <a-text
           value="ARExhibition\nWillkommen auf Hydra!"
           color="white"
           align="center"
           width="7"
-          position="0 1.5 -0.1"
+          position="0 1.5 0.5"
         ></a-text>
       </a-entity>
 
