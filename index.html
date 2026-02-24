@@ -14,14 +14,18 @@
         position: fixed; inset: 0; background: rgba(0,0,0,0.85);
         display: flex; flex-direction: column; align-items: center;
         justify-content: center; z-index: 9999; color: white;
-        text-align: center; padding: 30px;
+        text-align: center; padding: 30px; gap: 16px;
       }
-      #overlay h1 { font-size: 26px; margin-bottom: 12px; }
-      #overlay p  { font-size: 15px; color: #ccc; margin-bottom: 30px; line-height: 1.5; }
-      #startBtn {
+      #overlay h1 { font-size: 26px; }
+      #overlay p  { font-size: 15px; color: #ccc; line-height: 1.5; }
+      .btn {
         padding: 16px 36px; font-size: 18px; font-weight: 700;
         background: #fff; color: #000; border: none;
-        border-radius: 14px; cursor: pointer;
+        border-radius: 14px; cursor: pointer; width: 100%;
+      }
+      .btn.secondary {
+        background: rgba(255,255,255,0.15); color: white;
+        font-size: 15px; padding: 12px;
       }
       #status {
         position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
@@ -46,8 +50,12 @@
   <body>
     <div id="overlay">
       <h1>🗺 AR auf Hydra</h1>
-      <p>Diese Seite nutzt deine Kamera und deinen Standort.<br>Bitte beides erlauben wenn gefragt.</p>
-      <button id="startBtn">▶ AR Starten</button>
+      <p>Kamera, Standort und Kompass werden benötigt.<br>Bitte alles erlauben wenn gefragt.</p>
+      <!-- Schritt 1: Kompass erlauben (iOS braucht das zuerst!) -->
+      <button class="btn" id="compassBtn">🧭 Kompass erlauben</button>
+      <!-- Schritt 2: AR starten -->
+      <button class="btn secondary" id="startBtn" style="display:none">▶ AR Starten</button>
+      <p id="compassStatus" style="font-size:13px; color:#aaa;"></p>
     </div>
     <div id="status">📍 GPS wird ermittelt…</div>
     <div id="compass">
@@ -61,10 +69,9 @@
       arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
       loading-screen="enabled: false"
     >
-      <a-assets timeout="10000">
+      <a-assets timeout="15000">
         <a-asset-item id="model" src="Matiblendlocationtest.glb"></a-asset-item>
       </a-assets>
-
       <a-entity
         gps-entity-place="latitude: 37.35170; longitude: 23.46239"
         rotation="0 180 0"
@@ -76,7 +83,6 @@
           scale="20 20 20"
         ></a-entity>
       </a-entity>
-
       <a-camera gps-camera="minDistance: 0" rotation-reader></a-camera>
     </a-scene>
 
@@ -116,8 +122,8 @@
 
         const arrow = document.getElementById('arrow');
         const dir   = document.getElementById('direction');
-        arrow.style.transform = `rotate(${relative}deg)`;
         arrow.textContent = '⬆️';
+        arrow.style.transform = `rotate(${relative}deg)`;
 
         if (dist < 10) {
           dir.textContent = '🎯 Du bist da!';
@@ -136,6 +142,43 @@
         }
       }
 
+      function startCompassListener() {
+        window.addEventListener('deviceorientation', e => {
+          // iOS: webkitCompassHeading ist genauer als alpha!
+          if (e.webkitCompassHeading !== undefined) {
+            userHeading = e.webkitCompassHeading;
+          } else {
+            userHeading = e.alpha;
+          }
+          updateCompass();
+        });
+      }
+
+      // Schritt 1: Kompass Button
+      document.getElementById('compassBtn').addEventListener('click', () => {
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          DeviceOrientationEvent.requestPermission().then(state => {
+            if (state === 'granted') {
+              startCompassListener();
+              document.getElementById('compassStatus').textContent = '✅ Kompass aktiv';
+            } else {
+              document.getElementById('compassStatus').textContent = '⚠️ Kompass verweigert';
+            }
+            document.getElementById('compassBtn').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'block';
+          }).catch(() => {
+            document.getElementById('compassBtn').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'block';
+          });
+        } else {
+          // Android oder älteres iOS
+          startCompassListener();
+          document.getElementById('compassBtn').style.display = 'none';
+          document.getElementById('startBtn').style.display = 'block';
+        }
+      });
+
+      // Schritt 2: AR starten
       document.getElementById('startBtn').addEventListener('click', () => {
         document.getElementById('overlay').style.display = 'none';
         document.getElementById('status').style.display  = 'block';
@@ -153,24 +196,6 @@
           (err) => { document.getElementById('status').textContent = '⚠️ GPS Fehler: ' + err.message; },
           { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
         );
-
-        if (window.DeviceOrientationEvent) {
-          if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            DeviceOrientationEvent.requestPermission().then(state => {
-              if (state === 'granted') {
-                window.addEventListener('deviceorientation', e => {
-                  userHeading = e.alpha;
-                  updateCompass();
-                });
-              }
-            });
-          } else {
-            window.addEventListener('deviceorientation', e => {
-              userHeading = e.alpha;
-              updateCompass();
-            });
-          }
-        }
       });
     </script>
   </body>
