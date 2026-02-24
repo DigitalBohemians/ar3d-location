@@ -4,99 +4,115 @@
     <meta charset="utf-8" />
     <title>AR Location – Hydra</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { background: #000; overflow: hidden; font-family: sans-serif; }
+
       #overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,0.85);
         display: flex; flex-direction: column; align-items: center;
         justify-content: center; z-index: 9999; color: white;
         text-align: center; padding: 30px;
       }
-      #overlay h1 { font-size: 26px; margin-bottom: 12px; }
-      #overlay p  { font-size: 15px; color: #ccc; margin-bottom: 30px; line-height: 1.5; }
+
       #startBtn {
         padding: 16px 36px; font-size: 18px; font-weight: 700;
         background: #fff; color: #000; border: none;
         border-radius: 14px; cursor: pointer;
       }
+
       #status {
         position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
         background: rgba(0,0,0,0.6); color: white; padding: 8px 16px;
         border-radius: 20px; font-size: 13px; z-index: 8888;
-        display: none; text-align: center; max-width: 90vw;
+        display: none;
       }
     </style>
   </head>
+
   <body>
+
     <div id="overlay">
       <h1>🗺 AR auf Hydra</h1>
-      <p>Diese Seite nutzt deine Kamera und deinen Standort.<br>Bitte beides erlauben wenn gefragt.</p>
+      <p>Kamera & Standort erlauben.</p>
       <button id="startBtn">▶ AR Starten</button>
     </div>
+
     <div id="status">📍 GPS wird ermittelt…</div>
+
     <a-scene
       vr-mode-ui="enabled: false"
-      renderer="antialias: true; alpha: true; logarithmicDepthBuffer: true;"
+      renderer="antialias: true; alpha: true;"
       arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
       loading-screen="enabled: false"
     >
+
       <a-assets>
         <img id="bild" src="8FE8AA28-375B-4C00-B168-BCDECCBDCEA6.png" crossorigin="anonymous" />
       </a-assets>
 
-      <!-- Zylinder am Boden als Marker -->
+      <!-- Marker Zylinder -->
       <a-cylinder
         gps-entity-place="latitude: 37.35158; longitude: 23.46232"
         radius="0.3"
         height="0.15"
         color="#00ffcc"
-        opacity="0.9"
       ></a-cylinder>
 
-      <!-- Alles in einer Entity, direkt über dem Zylinder -->
+      <!-- GESAMTE ENTITY 180° GEDREHT -->
       <a-entity
         gps-entity-place="latitude: 37.35158; longitude: 23.46232"
+        rotation="0 180 0"
       >
-        <!-- Bild 2m hoch -->
+
+        <!-- Bild -->
         <a-plane
           src="#bild"
-          width="3" height="2"
+          width="3"
+          height="2"
           position="0 2 0"
-          side="double"
         ></a-plane>
 
-        <!-- Text 0.5m hoch direkt darunter -->
+        <!-- Text -->
         <a-text
           value="ARExhibition\nWillkommen auf Hydra!"
           color="white"
           align="center"
           width="6"
           position="0 0.5 0"
-          side="double"
         ></a-text>
+
       </a-entity>
 
       <a-camera gps-camera="minDistance: 0" rotation-reader></a-camera>
+
     </a-scene>
+
     <script>
       document.getElementById('startBtn').addEventListener('click', () => {
         document.getElementById('overlay').style.display = 'none';
         document.getElementById('status').style.display  = 'block';
+
         navigator.geolocation.watchPosition(
           (pos) => {
             const lat = pos.coords.latitude.toFixed(5);
             const lon = pos.coords.longitude.toFixed(5);
             const acc = Math.round(pos.coords.accuracy);
-            document.getElementById('status').textContent = `📍 ${lat}, ${lon} (±${acc}m)`;
+            document.getElementById('status').textContent =
+              `📍 ${lat}, ${lon} (±${acc}m)`;
           },
-          (err) => { document.getElementById('status').textContent = '⚠️ GPS Fehler: ' + err.message; },
-          { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+          (err) => {
+            document.getElementById('status').textContent =
+              '⚠️ GPS Fehler: ' + err.message;
+          },
+          { enableHighAccuracy: true }
         );
       });
     </script>
+
   </body>
 </html>
